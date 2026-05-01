@@ -37,11 +37,26 @@ APIs, and pushes actionable intel into a Wazuh SIEM as live detection lists.
 
 Editable source: [`assets/diagrams/architecture.drawio`](assets/diagrams/architecture.drawio)
 
+This diagram shows the complete IOC lifecycle. Feed-specific ingestors pull
+raw CTI from URLhaus, Feodo Tracker, and OTX, normalize each record into a
+shared schema, then store it in SQLite for deduplication and scoring. Keeping
+ingestion, scoring, enrichment, and export as separate stages makes the
+pipeline easier to debug and extend. In a Blue Team workflow, this separation
+also matters operationally: noisy feed ingestion should not directly become
+SIEM detection logic until confidence scoring and enrichment have filtered it.
+
 ---
 
 ### 1️⃣ Feed Ingestion
 
 ![Feed ingestion output](assets/screenshots/02-feed-ingestion-all-feeds.png)
+
+This screenshot proves the pipeline can ingest all three configured CTI
+sources. URLhaus contributes malicious URLs and derived domains/IPs, Feodo
+contributes curated C2 IPs, and OTX contributes broader community-sourced
+indicators from pulses. The important engineering detail is that each feed has
+different raw fields and formats, but the ingestors normalize everything into
+the same IOC model before storage. This makes later stages feed-agnostic.
 
 ---
 
@@ -51,9 +66,22 @@ Editable source: [`assets/diagrams/architecture.drawio`](assets/diagrams/archite
 
 ![SQLite stats and feed health](assets/screenshots/03-sqlite-stats-feed-health.png)
 
+The stats output validates that ingestion produced queryable data in SQLite.
+It shows total IOC volume, breakdown by IOC type, breakdown by source, and the
+latest feed run results. This is useful for operations because it gives quick
+feed health visibility: if one source starts failing, the pipeline records that
+failure instead of silently producing stale detections.
+
 **B. Deduplication in Action**
 
 ![SQLite deduplication query](assets/screenshots/04-sqlite-dedup-hit-count.png)
+
+This query demonstrates deduplication and source/tag merging. The database uses
+`UNIQUE(value, type)` so repeated indicators do not create duplicate rows.
+Instead, repeated or corroborated observations update `last_seen`, merge tags,
+merge sources, and update `hit_count`. That matters because a single IOC seen
+across multiple feeds is stronger signal than an IOC seen once in one noisy
+community feed.
 
 ---
 
@@ -63,6 +91,13 @@ Editable source: [`assets/diagrams/architecture.drawio`](assets/diagrams/archite
 
 ![Scoring report](assets/screenshots/05-scoring-report.png)
 
+The scoring screenshot shows how raw IOCs become prioritized intelligence. The
+score combines recency, source reputation, and cross-feed corroboration. Recent
+URLhaus or Feodo indicators naturally score higher than stale indicators, and
+multi-source sightings increase confidence. This prevents the pipeline from
+treating every feed entry as equally actionable, which is critical when the
+output becomes live SIEM detection content.
+
 ---
 
 ### 4️⃣ API Enrichment
@@ -70,6 +105,13 @@ Editable source: [`assets/diagrams/architecture.drawio`](assets/diagrams/archite
 **Enrichment Output and Database Verification**
 
 ![API enrichment and DB query](assets/screenshots/06-api-enrichment-and-db.png)
+
+The enrichment step adds external context to high-confidence IOCs. For IPs,
+AbuseIPDB provides abuse confidence, country, ISP, and usage type, while
+VirusTotal provides malicious/suspicious engine counts. The SQLite query proves
+the enrichment is persisted as JSON in the `enrichment` column. Storing this as
+JSON keeps the schema simple while preserving full API detail for reporting or
+future detection logic.
 
 ---
 
@@ -79,21 +121,52 @@ Editable source: [`assets/diagrams/architecture.drawio`](assets/diagrams/archite
 
 ![Wazuh CDB export](assets/screenshots/07-wazuh-cdb-export-local.png)
 
+The exporter converts high-confidence IPs and domains into Wazuh CDB list
+format: `indicator:label`. This screenshot shows the local export path used
+for Docker-based Wazuh deployments. The purpose is to move from passive
+intelligence storage to active detection content. Once loaded by Wazuh, these
+lists can be queried during log analysis in real time.
+
 **B. Wazuh Custom Rule**
 
 ![Wazuh custom rule](assets/screenshots/08-wazuh-custom-rule.png)
+
+The custom Wazuh rule connects decoded log fields to the exported CDB lists.
+For SSH events, the rule checks `srcip` against `etc/lists/threat-intel-ips`
+after the built-in SSH failure rules have decoded the source IP. The rule ID,
+severity level, MITRE mapping, and description make the alert actionable in the
+SIEM. This is the point where CTI becomes detection engineering.
 
 **C. Docker Deployment Into Wazuh Manager**
 
 ![Docker Wazuh deployment](assets/screenshots/09-wazuh-docker-deploy-restart.png)
 
+Because this Wazuh stack runs in Docker, the CDB lists must be copied into the
+manager container rather than written to host `/var/ossec`. This screenshot
+shows the operational deployment path: copy lists and rules into the manager,
+fix ownership and permissions, register the lists in Wazuh configuration, and
+restart the manager. This validates the pipeline against a realistic
+containerized Wazuh setup.
+
 **D. Wazuh Logtest Alert Firing on a Matched IOC**
 
 ![Wazuh logtest alert](assets/screenshots/10-wazuh-logtest-alert.png)
 
+`wazuh-logtest` verifies rule behavior without waiting for a live endpoint to
+generate logs. The test log contains an IOC from the exported IP CDB list, Wazuh
+decodes it as `srcip`, checks it against the threat-intel list, and fires rule
+`100500` at level `12`. This proves the detection logic works end to end:
+feed IOC -> SQLite -> score -> export -> Wazuh CDB -> alert.
+
 **E. Wazuh Dashboard Alert**
 
 ![Wazuh dashboard alert](assets/screenshots/11-wazuh-dashboard-alert.png)
+
+The dashboard screenshot shows the same detection surfaced in the analyst
+interface. It includes the matched IOC, rule ID, severity, rule description,
+manager name, and decoded event fields. This is the final operational proof:
+the pipeline does not just generate files, it produces visible security events
+that an analyst can triage in Wazuh.
 
 ---
 
@@ -103,9 +176,21 @@ Editable source: [`assets/diagrams/architecture.drawio`](assets/diagrams/archite
 
 ![systemd timer status](assets/screenshots/13-systemd-timer-status.png)
 
+The timer status proves the pipeline can run continuously without manual
+execution. The user-level systemd timer schedules the service every six hours,
+which is appropriate for lightweight CTI refresh on an analyst workstation or
+lab sensor. `Persistent=true` also means missed runs can be caught up when the
+system comes back online.
+
 **B. Journal Log of Automated Run**
 
 ![systemd service journal](assets/screenshots/12-systemd-journal-run.png)
+
+The journal output shows a full automated service execution: ingest, score,
+sample enrichment, and export. This matters because automation is what turns
+the project from a one-off script into a maintainable daemon-style pipeline.
+The logs provide operational evidence for troubleshooting feed failures, API
+issues, and export problems.
 
 ---
 
