@@ -33,17 +33,15 @@ APIs, and pushes actionable intel into a Wazuh SIEM as live detection lists.
 
 ### Pipeline Architecture
 
-Editable source: [`assets/diagrams/architecture.drawio`](assets/diagrams/architecture.drawio)
+![Pipeline architecture](assets/screenshots/01-architecture-diagram.png)
 
-> 📷 Capture the rendered architecture diagram from draw.io or export
-> `assets/diagrams/architecture.svg` as a high-resolution PNG.
+Editable source: [`assets/diagrams/architecture.drawio`](assets/diagrams/architecture.drawio)
 
 ---
 
 ### 1️⃣ Feed Ingestion
 
-> 📷 Capture `python cli.py ingest --otx-limit 100 --otx-max-page 5`
-> showing URLhaus, Feodo Tracker, and OTX ingestion counts.
+![Feed ingestion output](assets/screenshots/02-feed-ingestion-all-feeds.png)
 
 ---
 
@@ -51,12 +49,11 @@ Editable source: [`assets/diagrams/architecture.drawio`](assets/diagrams/archite
 
 **A. Database Stats After Full Ingest**
 
-> 📷 Capture `python cli.py stats` showing total IOC count, type breakdown,
-> source breakdown, and recent feed runs.
+![SQLite stats and feed health](assets/screenshots/03-sqlite-stats-feed-health.png)
 
 **B. Deduplication in Action**
 
-> 📷 Capture a SQLite query showing merged sources and `hit_count > 1`.
+![SQLite deduplication query](assets/screenshots/04-sqlite-dedup-hit-count.png)
 
 ---
 
@@ -64,8 +61,7 @@ Editable source: [`assets/diagrams/architecture.drawio`](assets/diagrams/archite
 
 **Score Distribution**
 
-> 📷 Capture `python cli.py score --verbose --top 5` and
-> `python cli.py report --top 20`.
+![Scoring report](assets/screenshots/05-scoring-report.png)
 
 ---
 
@@ -73,8 +69,7 @@ Editable source: [`assets/diagrams/architecture.drawio`](assets/diagrams/archite
 
 **Enrichment Output and Database Verification**
 
-> 📷 Capture `python cli.py enrich --type ip --limit 5 --verbose` and a SQLite query
-> showing enrichment JSON stored in the database.
+![API enrichment and DB query](assets/screenshots/06-api-enrichment-and-db.png)
 
 ---
 
@@ -82,20 +77,23 @@ Editable source: [`assets/diagrams/architecture.drawio`](assets/diagrams/archite
 
 **A. CDB List File Contents**
 
-> 📷 Capture local CDB export output plus `head` output for IP/domain lists.
+![Wazuh CDB export](assets/screenshots/07-wazuh-cdb-export-local.png)
 
 **B. Wazuh Custom Rule**
 
-> 📷 Capture `wazuh/threat_intel_rules.xml`.
+![Wazuh custom rule](assets/screenshots/08-wazuh-custom-rule.png)
 
 **C. Docker Deployment Into Wazuh Manager**
 
-> 📷 Capture Docker copy, permissions, list registration, and Wazuh restart.
+![Docker Wazuh deployment](assets/screenshots/09-wazuh-docker-deploy-restart.png)
 
-**D. Wazuh Alert Firing on a Matched IOC**
+**D. Wazuh Logtest Alert Firing on a Matched IOC**
 
-> 📷 Capture `wazuh-logtest` output showing rule `100500`, level `12`, and
-> the matched IOC IP.
+![Wazuh logtest alert](assets/screenshots/10-wazuh-logtest-alert.png)
+
+**E. Wazuh Dashboard Alert**
+
+![Wazuh dashboard alert](assets/screenshots/11-wazuh-dashboard-alert.png)
 
 ---
 
@@ -103,11 +101,11 @@ Editable source: [`assets/diagrams/architecture.drawio`](assets/diagrams/archite
 
 **A. Timer Status**
 
-> 📷 Capture `systemctl --user status threat-intel.timer`.
+![systemd timer status](assets/screenshots/13-systemd-timer-status.png)
 
 **B. Journal Log of Automated Run**
 
-> 📷 Capture `journalctl --user -u threat-intel.service --no-pager`.
+![systemd service journal](assets/screenshots/12-systemd-journal-run.png)
 
 ---
 
