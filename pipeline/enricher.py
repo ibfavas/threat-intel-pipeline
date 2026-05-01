@@ -64,11 +64,11 @@ class IOCEnricher:
                 time.sleep(VIRUSTOTAL_SLEEP_SECONDS)
 
             self.storage.update_enrichment(row["id"], enrichment)
+            self.storage.conn.commit()
             if verbose:
                 print(self._enrichment_log_line(row["value"], enrichment))
             updated += 1
 
-        self.storage.conn.commit()
         return updated
 
     def enrich_abuseipdb(self, ip: str) -> dict[str, Any]:
