@@ -5,6 +5,8 @@ Automated threat intelligence pipeline that ingests IOCs from multiple
 open-source CTI feeds, scores them by confidence, enriches via external
 APIs, and pushes actionable intel into a Wazuh SIEM as live detection lists.
 
+Detailed technical writeup: [WRITEUP.md](WRITEUP.md)
+
 ---
 
 ## 🔥 Highlights
@@ -199,6 +201,7 @@ issues, and export problems.
 ```text
 threat-intel-pipeline/
 ├── README.md
+├── WRITEUP.md
 ├── requirements.txt
 ├── config.py                  # API keys, thresholds, paths
 ├── cli.py                     # Entry point
