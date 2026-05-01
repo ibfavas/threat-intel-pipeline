@@ -1,0 +1,26 @@
+<group name="threat_intel,">
+  <rule id="100500" level="12">
+    <if_sid>5710,5716</if_sid>
+    <list field="srcip" lookup="match_key">etc/lists/threat-intel-ips</list>
+    <description>Source IP matched threat intelligence CDB list: $(srcip)</description>
+    <mitre>
+      <id>T1071</id>
+    </mitre>
+  </rule>
+
+  <rule id="100501" level="12">
+    <list field="dstip" lookup="match_key">etc/lists/threat-intel-ips</list>
+    <description>Destination IP matched threat intelligence CDB list</description>
+    <mitre>
+      <id>T1071</id>
+    </mitre>
+  </rule>
+
+  <rule id="100502" level="10">
+    <list field="url" lookup="match_key">etc/lists/threat-intel-domains</list>
+    <description>URL/domain matched threat intelligence CDB list</description>
+    <mitre>
+      <id>T1071</id>
+    </mitre>
+  </rule>
+</group>

@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1400" viewBox="0 0 2400 1400">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1f2937"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#111827" flood-opacity="0.16"/>
+    </filter>
+    <style>
+      .bg { fill: #f8fafc; }
+      .title { fill: #0f172a; font: 800 58px Arial, sans-serif; }
+      .subtitle { fill: #475569; font: 400 30px Arial, sans-serif; }
+      .column-title { fill: #0f172a; font: 800 38px Arial, sans-serif; }
+      .column { fill: #ffffff; stroke: #dbe3ef; stroke-width: 3; rx: 26; filter: url(#shadow); }
+      .box { stroke-width: 3; rx: 18; filter: url(#shadow); }
+      .feed { fill: #eff6ff; stroke: #2563eb; }
+      .process { fill: #f0fdf4; stroke: #16a34a; }
+      .output { fill: #fff7ed; stroke: #ea580c; }
+      .box-title { fill: #0f172a; font: 800 32px Arial, sans-serif; text-anchor: middle; }
+      .box-subtitle { fill: #475569; font: 400 22px Arial, sans-serif; text-anchor: middle; }
+      .arrow { stroke: #1f2937; stroke-width: 7; fill: none; marker-end: url(#arrow); stroke-linecap: round; }
+      .thin-arrow { stroke: #334155; stroke-width: 5; fill: none; marker-end: url(#arrow); stroke-linecap: round; }
+      .label { fill: #334155; font: 700 22px Arial, sans-serif; text-anchor: middle; }
+      .footer { fill: #64748b; font: 400 22px Arial, sans-serif; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="2400" height="1400"/>
+  <text class="title" x="1200" y="105" text-anchor="middle">Threat Intel Aggregation &amp; IOC Enrichment Pipeline</text>
+  <text class="subtitle" x="1200" y="155" text-anchor="middle">Feeds → Normalization → Storage → Scoring → Enrichment → Wazuh Detection Lists</text>
+
+  <rect class="column" x="120" y="240" width="560" height="920"/>
+  <rect class="column" x="920" y="240" width="560" height="920"/>
+  <rect class="column" x="1720" y="240" width="560" height="920"/>
+
+  <text class="column-title" x="400" y="315" text-anchor="middle">Feeds</text>
+  <text class="column-title" x="1200" y="315" text-anchor="middle">Processing</text>
+  <text class="column-title" x="2000" y="315" text-anchor="middle">Output</text>
+
+  <rect class="box feed" x="220" y="400" width="360" height="125"/>
+  <text class="box-title" x="400" y="455">OTX AlienVault</text>
+  <text class="box-subtitle" x="400" y="492">pulses + indicators</text>
+
+  <rect class="box feed" x="220" y="605" width="360" height="125"/>
+  <text class="box-title" x="400" y="660">URLhaus</text>
+  <text class="box-subtitle" x="400" y="697">malicious URLs/domains</text>
+
+  <rect class="box feed" x="220" y="810" width="360" height="125"/>
+  <text class="box-title" x="400" y="865">Feodo Tracker</text>
+  <text class="box-subtitle" x="400" y="902">C2 IP blocklist</text>
+
+  <rect class="box process" x="1010" y="365" width="380" height="115"/>
+  <text class="box-title" x="1200" y="415">Ingestors</text>
+  <text class="box-subtitle" x="1200" y="452">fetch + normalize IOCs</text>
+
+  <rect class="box process" x="1010" y="545" width="380" height="115"/>
+  <text class="box-title" x="1200" y="595">SQLite DB</text>
+  <text class="box-subtitle" x="1200" y="632">dedupe + merge tags</text>
+
+  <rect class="box process" x="1010" y="725" width="380" height="115"/>
+  <text class="box-title" x="1200" y="775">Scorer</text>
+  <text class="box-subtitle" x="1200" y="812">recency + reputation</text>
+
+  <rect class="box process" x="1010" y="905" width="380" height="115"/>
+  <text class="box-title" x="1200" y="955">Enricher</text>
+  <text class="box-subtitle" x="1200" y="992">AbuseIPDB + VirusTotal</text>
+
+  <rect class="box output" x="1810" y="500" width="380" height="130"/>
+  <text class="box-title" x="2000" y="555">Wazuh CDB List</text>
+  <text class="box-subtitle" x="2000" y="592">live detection lookup</text>
+
+  <rect class="box output" x="1810" y="760" width="380" height="130"/>
+  <text class="box-title" x="2000" y="815">CLI Report</text>
+  <text class="box-subtitle" x="2000" y="852">top IOCs + stats</text>
+
+  <path class="arrow" d="M 580 462 C 720 462, 820 422, 1000 422"/>
+  <path class="arrow" d="M 580 668 C 730 668, 820 500, 1000 430"/>
+  <path class="arrow" d="M 580 872 C 735 872, 820 585, 1000 445"/>
+
+  <path class="thin-arrow" d="M 1200 480 L 1200 535"/>
+  <path class="thin-arrow" d="M 1200 660 L 1200 715"/>
+  <path class="thin-arrow" d="M 1200 840 L 1200 895"/>
+
+  <path class="arrow" d="M 1390 960 C 1565 960, 1635 565, 1800 565"/>
+  <path class="arrow" d="M 1390 782 C 1570 782, 1630 825, 1800 825"/>
+
+  <text class="label" x="800" y="370">normalized IOC records</text>
+  <text class="label" x="1605" y="505">score ≥ 60</text>
+  <text class="label" x="1605" y="760">operator view</text>
+
+  <text class="footer" x="120" y="1260">Unified model: value, type, source, first_seen, last_seen, confidence_score, hit_count, enrichment, tags</text>
+  <text class="footer" x="120" y="1305">Detection path: high-confidence IPs/domains are exported as Wazuh CDB entries for real-time log correlation.</text>
+</svg>
+

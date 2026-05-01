@@ -1,0 +1,10 @@
+[Unit]
+Description=Threat Intel IOC Pipeline
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/Github/threat-intel-pipeline
+ExecStart=%h/Github/threat-intel-pipeline/.venv/bin/python cli.py ingest
+ExecStart=%h/Github/threat-intel-pipeline/.venv/bin/python cli.py score
+ExecStart=%h/Github/threat-intel-pipeline/.venv/bin/python cli.py enrich --limit 5 --verbose
+ExecStart=%h/Github/threat-intel-pipeline/.venv/bin/python cli.py export --wazuh --ip-list exports/threat-intel-ips --domain-list exports/threat-intel-domains
